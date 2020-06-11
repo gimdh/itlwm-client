@@ -9,15 +9,10 @@
 #ifndef KernelConnector_h
 #define KernelConnector_h
 
-#define CONTROL_NAME "ITLWM"
+#define CONTROL_NAME "org.zxystd.itlwm.control"
 
+#include "Commands.h"
 
-#define COM_JOIN 1
-
-struct connection_data {
-    char ssid[256];
-    char passwd[256];
-};
 
 int open_socket(void);
 int send_join_ssid(const char *ssid, const char *passwd);
