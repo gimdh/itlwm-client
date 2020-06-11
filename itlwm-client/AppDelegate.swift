@@ -20,7 +20,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 
         var name = "Disconnected"
         
-        if ready == 0 {
+        if ready != 0 {
             name = "NoKext"
             available = false
         }
