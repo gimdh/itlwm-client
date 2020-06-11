@@ -8,23 +8,26 @@
 
 #include "KernelConnector.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/kern_control.h>
 #include <sys/kern_event.h>
-#include <errno.h>
 #include <unistd.h>
 #include <string.h>
 
+static int id = -1;
 static int fd = -1;
 
 int open_socket(void)
 {
 
     fd = socket(PF_SYSTEM, SOCK_DGRAM, SYSPROTO_CONTROL);
-    
+    printf("fd %d\n", fd);
+    fflush(stdout);
+
     if (fd != -1) {
         struct sockaddr_ctl addr;
 
@@ -42,12 +45,11 @@ int open_socket(void)
             return -1;
         }
 
+        id = info.ctl_id;
         addr.sc_id = info.ctl_id;
         addr.sc_unit = 0;
 
         int result = connect(fd, (struct sockaddr *)&addr, sizeof(addr));
-        int a = errno;
-        printf("error %s", strerror(a));
         if (result) {
             fprintf(stderr, "connect failed %d\n", result);
             return -1;
@@ -70,19 +72,47 @@ int send_join_ssid(const char *ssid, const char *passwd) {
     return send_command(COM_JOIN, (void*) &data, sizeof(struct connection_data));
 }
 
+int send_disconnect(void) {
+    return send_command(COM_DISCON, NULL, 0);
+}
+
 int send_command(int id, const void *data, int data_len) {
-    if (fd != -1)
+    if (fd == -1)
     {
         open_socket();
     }
     
+
     int result = setsockopt(fd, SYSPROTO_CONTROL, id, data, data_len);
-        
-    if (result){
+    int a = errno;
+
+    if (result) {
         fprintf(stderr, "setsockopt failed on call id %d - result was %d\n", id, result);
-        return -1;
+        return a;
     }
     
+    return 0;
+}
+
+int get_nodes(struct node_data_ary *ary) {
+    int len = sizeof(struct node_data_ary);
+    return get_command(COM_GETLIST, ary, &len);
+}
+
+int get_command(int id, void *data, int *data_len) {
+    if (fd == -1)
+    {
+        open_socket();
+    }
+
+    int result = getsockopt(fd, SYSPROTO_CONTROL, id, data, data_len);
+    int a = errno;
+
+    if (result) {
+        fprintf(stderr, "getsockopt failed on call id %d - result was %d\n", id, result);
+        return a;
+    }
+
     return 0;
 }
 

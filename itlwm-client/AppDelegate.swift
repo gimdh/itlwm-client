@@ -39,9 +39,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func constructMenu() {
-      let menu = NSMenu()
+        let menu = NSMenu()
+        
         if available {
-            menu.addItem(NSMenuItem(title: "Connect",
+            menu.addItem(NSMenuItem(title: "Connect Manually",
                                     action: #selector(join_ssid(_:)),
                                     keyEquivalent: "c"))
         }
@@ -58,6 +59,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     @IBAction func quit_action(_ sender: Any?) {
         exit(0)
+    }
+    
+    @IBAction func join_known_ssid(_ sender: Any?) {
+        
     }
     
     @IBAction func join_ssid(_ sender: Any?) {
